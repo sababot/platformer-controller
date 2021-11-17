@@ -1,5 +1,5 @@
 # untitled-game
 untitled keyboard javascript game
 
-# play
+# play
 https://sababot.github.io/untitled-game
