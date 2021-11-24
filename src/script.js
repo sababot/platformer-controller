@@ -92,23 +92,47 @@ function Player(x, y, infected){
         else{
             c.fillStyle = "#ff5961";
         }
+
         c.fill();
+
+        if (left == true){
+            if (up == true || down == true){
+                playerVariable.dx = -3.5;
+            }
+            else{
+                playerVariable.dx = -5;
+            }
+        }
+
+        if (right == true){
+            if (up == true || down == true){
+                playerVariable.dx = 3.5;
+            }
+            else{
+                playerVariable.dx = 5;
+            }
+        }
+
+        if (up == true){
+            if (left == true || right == true){
+                playerVariable.dy = -3.5;
+            }
+            else{
+                playerVariable.dy = -5;
+            }
+        }
+
+        if (down == true){
+            if (left == true || right == true){
+                playerVariable.dy = 3.5;
+            }
+            else{
+                playerVariable.dy = 5;
+            }
+        }
 
         this.x += this.dx;
         this.y += this.dy;
-
-        if (this.y < window.innerHeight - 100){
-            this.y += 5;
-        }
-
-        if (jump > 0){
-            playerVariable.dy = -12.5;
-            jump -= 1;
-        }
-        else
-        {
-            playerVariable.dy = 0;
-        }
     }
 }
 
@@ -125,30 +149,20 @@ var playerVariable = new Player(canvas.width / 2, canvas.height / 2);
 
 function aim(e){
     if(e.keyCode == 37){
-        playerVariable.dx = -5;
         left = true;
-        right = false;
-        up = false;
-        down = false;
     }
 
     if(e.keyCode == 39){
-        playerVariable.dx = 5;
-        left = false;
         right = true;
-        up = false;
-        down = false;
     }
 
-/*
     if(e.keyCode == 38){
-        jump = 10;
-        left = false;
-        right = false;
         up = true;
-        down = false;
     }
-*/
+
+    if(e.keyCode == 40){
+        down = true;
+    }
 }
 
 function aim2(e){
@@ -164,13 +178,17 @@ function aim2(e){
         right = false;
     }
 
-/*
     if(e.keyCode == 38 && up == true){
         playerVariable.dx = 0;
         playerVariable.dy = 0;
         up = false;
     }
-*/
+
+    if(e.keyCode == 40 && down == true){
+        playerVariable.dx = 0;
+        playerVariable.dy = 0;
+        down = false
+    }
 }
 
 particleArray[0].infected = true;
