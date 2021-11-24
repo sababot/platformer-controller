@@ -9,12 +9,12 @@ document.addEventListener('keyup', aim2, true);
 
 let g = 0;
 let f = 1;
-let health = 100;
 let bulletCount = 0;
 var left = false;
 var right = false;
 var up = false;
 var down = false;
+let jump = 0;
 
 function Particle(x, y, dx, dy, collision, infected){
     this.x = x;
@@ -73,7 +73,7 @@ function Particle(x, y, dx, dy, collision, infected){
 
 var particleArray = [];
 
-function Player(x, y){
+function Player(x, y, infected){
     this.x = x;
     this.y = y;
     this.dx = 0;
@@ -81,19 +81,38 @@ function Player(x, y){
     this.r = 15;
     this.m = 2.5;
     this.colliding = true;
+    this.infected = infected;
 
     this.draw = async function(){
         c.beginPath();
-        c.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
-        c.fillStyle = "#ff5961";
+        c.rect(this.x, this.y, 20, 20);
+        if (this.infected){
+            c.fillStyle = "black";
+        }
+        else{
+            c.fillStyle = "#ff5961";
+        }
         c.fill();
 
         this.x += this.dx;
         this.y += this.dy;
+
+        if (this.y < window.innerHeight - 100){
+            this.y += 5;
+        }
+
+        if (jump > 0){
+            playerVariable.dy = -12.5;
+            jump -= 1;
+        }
+        else
+        {
+            playerVariable.dy = 0;
+        }
     }
 }
 
-for (var i = 0; i < 30; i++){
+for (var i = 0; i < 1; i++){
     var r = 15;
     var x = Math.random() * (canvas.width - r * 2) + r;
     var y = Math.random() * (canvas.height - r * 2) + r;
@@ -106,8 +125,7 @@ var playerVariable = new Player(canvas.width / 2, canvas.height / 2);
 
 function aim(e){
     if(e.keyCode == 37){
-        playerVariable.dx = -3;
-        playerVariable.dy = 0;
+        playerVariable.dx = -5;
         left = true;
         right = false;
         up = false;
@@ -115,31 +133,22 @@ function aim(e){
     }
 
     if(e.keyCode == 39){
-        playerVariable.dx = 3;
-        playerVariable.dy = 0;
+        playerVariable.dx = 5;
         left = false;
         right = true;
         up = false;
         down = false;
     }
 
+/*
     if(e.keyCode == 38){
-        playerVariable.dx = 0;
-        playerVariable.dy = -3;
+        jump = 10;
         left = false;
         right = false;
         up = true;
         down = false;
     }
-
-    if(e.keyCode == 40){
-        playerVariable.dx = 0;
-        playerVariable.dy = 3;
-        left = false;
-        right = false;
-        up = false;
-        down = true;
-    }
+*/
 }
 
 function aim2(e){
@@ -155,17 +164,13 @@ function aim2(e){
         right = false;
     }
 
+/*
     if(e.keyCode == 38 && up == true){
         playerVariable.dx = 0;
         playerVariable.dy = 0;
         up = false;
     }
-
-    if(e.keyCode == 40 && down == true){
-        playerVariable.dx = 0;
-        playerVariable.dy = 0;
-        down = false
-    }
+*/
 }
 
 particleArray[0].infected = true;
@@ -253,6 +258,11 @@ function collide(){
                 obj1.dy -= (speed * vCollisionNorm.y);
                 //obj2.dx += (speed * vCollisionNorm.x);
                 //obj2.dy += (speed * vCollisionNorm.y);
+
+                if (obj1.infected == true || obj2.infected == true){
+                    obj1.infected = true;
+                    obj2.infected = true;
+                }
             }
     }
 }
@@ -260,7 +270,6 @@ function collide(){
 function help(){
     c.font = "20px monospace";
     c.fillStyle = "red";
-    c.fillText("health: " + health, 25, 35);
 }
 
 function animate(){
