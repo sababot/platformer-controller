@@ -1,7 +1,7 @@
 var canvas = document.getElementById('canvas');
 var c = canvas.getContext('2d');
 
-canvas.width = window.innerHeight;
+canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 document.addEventListener('keydown', aim, true);
@@ -16,6 +16,17 @@ var right = false;
 var up = false;
 var down = false;
 let jump = 0;
+let bullet_index = 0;
+let mouse_pos = null;
+let angle = null;
+
+canvas.addEventListener("mousemove", e => {
+
+    mouse_pos = {
+        x: e.clientX - canvas.offsetLeft,
+        y: e.clientY - canvas.offsetTop
+    }
+});
 
 function Particle(x, y, dx, dy, collision, infected){
     this.x = x;
@@ -74,6 +85,34 @@ function Particle(x, y, dx, dy, collision, infected){
 
 var particleArray = [];
 
+class CannonBall {
+    constructor(angle, x, y) {
+        this.radius = 5;
+        this.angle = angle;
+        this.x = x;
+        this.y = y;
+        this.dx = Math.cos(angle) * 15;
+        this.dy = Math.sin(angle) * 15;
+        this.gravity = 0.05;
+    }
+
+    move() {  
+        this.x += this.dx; 
+        this.y += this.dy; 
+    }
+
+    draw() {
+        //Set next offsets to normal offsets
+        c.fillStyle = "black";
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        c.fill();
+    }
+}
+
+var cannonBalls = [];
+
+/*
 function box(x, y, height, width, fill_style){
     this.x = x;
     this.y = y;
@@ -88,6 +127,7 @@ function box(x, y, height, width, fill_style){
         c.fill();
     }
 }
+*/
 
 function Player(x, y, infected){
     this.x = x;
@@ -109,7 +149,7 @@ function Player(x, y, infected){
     this.draw = function(){
         // Graphics
         c.beginPath();
-        c.rect(this.x, this.y, 20, 20);
+        c.rect(this.x, this.y, 40, 40);
         if (this.infected){
             c.fillStyle = "black";
         }
@@ -120,12 +160,16 @@ function Player(x, y, infected){
         c.fill();
 
         // Movement
-        if (left == true){
+        if (left == true && this.x > 1){
             playerVariable.dx = -5;
         }
 
-        if (right == true){
+        else if (right == true && this.x < window.innerWidth - 41){
             playerVariable.dx = 5;
+        }
+
+        else{
+            playerVariable.dx = 0;
         }
 
         if (up == true && this.colliding == true){
@@ -146,7 +190,7 @@ function Player(x, y, infected){
         }
 
         // Gravity
-        if (this.y < window.innerHeight - 50 - 20 && this.move_y_down == true){
+        if (this.y < window.innerHeight - 100 - 40 && this.move_y_down == true){
             if (this.vel < 10){
                 this.vel *= 1.075;
             }
@@ -160,8 +204,17 @@ function Player(x, y, infected){
             this.colliding = true;
         }
 
-        if (this.y > window.innerHeight - 50 - 20){
-            this.y = window.innerHeight - 49 - 20;
+        if (this.y > window.innerHeight - 100 - 40){
+            this.y = window.innerHeight - 99 - 40;
+        }
+
+        // Shooting
+        if (mouse_pos){
+            angle = Math.atan2(mouse_pos.y - (this.y - 20), mouse_pos.x - (this.x + 20));
+
+            //c.translate((this.x + 20), (this.y - 20));
+            //c.rotate(angle);
+            //c.translate(-(this.x + 20), -(this.y - 20));
         }
 
         // Movement
@@ -172,52 +225,55 @@ function Player(x, y, infected){
 
 var playerVariable = new Player(canvas.width / 2, canvas.height / 2);
 
+cannonBalls.push(new CannonBall(angle, playerVariable.x, playerVariable.y));
+
 function aim(e){
-    if(e.keyCode == 37){
+    if(e.keyCode == 37 || e.keyCode == 65){
         left = true;
     }
 
-    if(e.keyCode == 39){
+    if(e.keyCode == 39 || e.keyCode == 68){
         right = true;
     }
 
-    if(e.keyCode == 38){
+    if(e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 32){
         up = true;
     }
 
-    if(e.keyCode == 40){
+    if(e.keyCode == 40 || e.keyCode == 83){
         down = true;
     }
 }
 
 function aim2(e){
-    if(e.keyCode == 37 && left == true){
+    if((e.keyCode == 37 && left == true) || (e.keyCode == 65 && left == true)){
         playerVariable.dx = 0;
         playerVariable.dy = 0;
         left = false;
     }
 
-    if(e.keyCode == 39 && right == true){
+    if((e.keyCode == 39 && right == true) || (e.keyCode == 68 && right == true)){
         playerVariable.dx = 0;
         playerVariable.dy = 0;
         right = false;
     }
 
-    if(e.keyCode == 38 && up == true){
+    if((e.keyCode == 38 && up == true) || (e.keyCode == 87 && up == true) || (e.keyCode == 32 && up == true)){
         playerVariable.dx = 0;
         playerVariable.dy = 0;
         up = false;
     }
 
-    if(e.keyCode == 40 && down == true){
+    if((e.keyCode == 40 && down == true) || (e.keyCode == 83 && down == true)){
         playerVariable.dx = 0;
         playerVariable.dy = 0;
         down = false
     }
 }
 
-var boxes = [];
+//var boxes = [];
 
+/*
 boxes.push(new box(300, 700, 10, 100, "brown"));
 boxes.push(new box(500, 650, 10, 100, "brown"));
 boxes.push(new box(300, 550, 10, 100, "brown"));
@@ -236,6 +292,7 @@ function collision(){
 
     playerVariable.move_y_down = true;
 }
+*/
 
 function animate(){
     requestAnimationFrame(animate);
@@ -244,18 +301,29 @@ function animate(){
         particleArray[i].update();
     }
 
-    for (i = 0; i < boxes.length; i++){
-        boxes[i].draw();
+    if (bullet_index % 2 == 0){
+        cannonBalls.push(new CannonBall(angle + (Math.random() * 0.25), playerVariable.x + 20, playerVariable.y + 20));
+    }
+    bullet_index += 1;
+
+    for (i = 0; i < cannonBalls.length; i++){
+        cannonBalls[i].draw();
+        cannonBalls[i].move();
     }
 
+    //for (i = 0; i < boxes.length; i++){
+        //boxes[i].draw();
+    //}
+
     c.beginPath();
-    c.rect(0, window.innerHeight - 49, window.innerWidth - 1, 50);
+    c.rect(0, window.innerHeight - 99, window.innerWidth - 1, 100);
     c.fillStyle = "#75beff";
     c.fill();
 
-    collision();
+    //collision();
 
     playerVariable.draw();
+    c.restore();
 }
 
 animate();
