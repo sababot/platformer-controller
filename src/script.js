@@ -7,6 +7,7 @@ canvas.height = window.innerHeight;
 document.addEventListener('keydown', aim, true);
 document.addEventListener('keyup', aim2, true);
 
+// Variables
 let g = 0;
 let f = 1;
 let bulletCount = 0;
@@ -73,6 +74,21 @@ function Particle(x, y, dx, dy, collision, infected){
 
 var particleArray = [];
 
+function box(x, y, height, width, fill_style){
+    this.x = x;
+    this.y = y;
+    this.height = height;
+    this.width = width;
+    this.fill_style = fill_style;
+
+    this.draw = function(){
+        c.beginPath();
+        c.rect(this.x, this.y, width, height);
+        c.fillStyle = this.fill_style;
+        c.fill();
+    }
+}
+
 function Player(x, y, infected){
     this.x = x;
     this.y = y;
@@ -82,8 +98,16 @@ function Player(x, y, infected){
     this.m = 2.5;
     this.colliding = true;
     this.infected = infected;
+    this.vel = 1;
+    this.jump_vel = 10;
+    this.colliding = false;
+    this.move_x_left = true;
+    this.move_x_right = true;
+    this.move_y_up = true;
+    this.move_y_down = true;
 
-    this.draw = async function(){
+    this.draw = function(){
+        // Graphics
         c.beginPath();
         c.rect(this.x, this.y, 20, 20);
         if (this.infected){
@@ -95,54 +119,55 @@ function Player(x, y, infected){
 
         c.fill();
 
+        // Movement
         if (left == true){
-            if (up == true || down == true){
-                playerVariable.dx = -3.5;
-            }
-            else{
-                playerVariable.dx = -5;
-            }
+            playerVariable.dx = -5;
         }
 
         if (right == true){
-            if (up == true || down == true){
-                playerVariable.dx = 3.5;
-            }
-            else{
-                playerVariable.dx = 5;
-            }
+            playerVariable.dx = 5;
         }
 
-        if (up == true){
-            if (left == true || right == true){
-                playerVariable.dy = -3.5;
-            }
-            else{
-                playerVariable.dy = -5;
-            }
+        if (up == true && this.colliding == true){
+            jump = 20;
+            jump_vel = 12.5;
         }
 
-        if (down == true){
-            if (left == true || right == true){
-                playerVariable.dy = 3.5;
+        // Jump
+        if (jump > 0){
+            if (jump_vel >= 0){
+                jump_vel -= 0.5;
             }
-            else{
-                playerVariable.dy = 5;
-            }
+            this.y -= jump_vel;
+            jump -= 1;
+        }
+        else{
+            playerVariable.dy = 0;
         }
 
+        // Gravity
+        if (this.y < window.innerHeight - 50 - 20 && this.move_y_down == true){
+            if (this.vel < 10){
+                this.vel *= 1.075;
+            }
+
+            this.y += this.vel;
+
+            this.colliding = false;
+        }
+        else{
+            this.vel = 1;
+            this.colliding = true;
+        }
+
+        if (this.y > window.innerHeight - 50 - 20){
+            this.y = window.innerHeight - 49 - 20;
+        }
+
+        // Movement
         this.x += this.dx;
         this.y += this.dy;
     }
-}
-
-for (var i = 0; i < 1; i++){
-    var r = 15;
-    var x = Math.random() * (canvas.width - r * 2) + r;
-    var y = Math.random() * (canvas.height - r * 2) + r;
-    var dx = (Math.random() - 0.5) * 5;
-    var dy = (Math.random() - 0.5) * 5;
-    particleArray.push(new Particle(x, y, dx, dy, true, false));
 }
 
 var playerVariable = new Player(canvas.width / 2, canvas.height / 2);
@@ -191,116 +216,46 @@ function aim2(e){
     }
 }
 
-particleArray[0].infected = true;
+var boxes = [];
 
-var circleIntersect = function(x1, y1, r1, x2, y2, r2) {
+boxes.push(new box(300, 700, 10, 100, "brown"));
+boxes.push(new box(500, 650, 10, 100, "brown"));
+boxes.push(new box(300, 550, 10, 100, "brown"));
+boxes.push(new box(150, 500, 10, 100, "brown"));
 
-    // Calculate the distance between the two circles
-    let squareDistance = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 
-    // When the distance is smaller or equal to the sum
-    // of the two radius, the circles touch or overlap
-    return squareDistance <= ((r1 + r2) * (r1 + r2))
-}
 
-function collide(){
-    let obj1;
-    let obj2;
-
-    // Reset collision state of all objects
-    for (let i = 0; i < particleArray.length; i++) {
-        particleArray[i].colliding = false;
-    }
-
-    // Start checking for collisions
-    for (let i = 0; i < particleArray.length; i++)
-    {
-        obj1 = particleArray[i];
-
-        for (let j = i + 1; j < particleArray.length; j++)
-        {
-            obj2 = particleArray[j];
-
-            // Compare object1 with object2
-            var dist = circleIntersect(obj1.x, obj1.y, obj1.r, obj2.x, obj2.y, obj2.r);
-            if (dist === true){
-                obj1.colliding = true;
-                obj2.colliding = true;
-
-                let vCollision = {x: obj2.x - obj1.x, y: obj2.y - obj1.y};
-                let distance = Math.sqrt((obj2.x-obj1.x)*(obj2.x-obj1.x) + (obj2.y-obj1.y)*(obj2.y-obj1.y));
-                let vCollisionNorm = {x: vCollision.x / distance, y: vCollision.y / distance};
-                let vRelativeVelocity = {x: obj1.dx - obj2.dx, y: obj1.dy - obj2.dy};
-                let speed = vRelativeVelocity.x * vCollisionNorm.x + vRelativeVelocity.y * vCollisionNorm.y;
-
-                if (speed < 0){
-                    break;
-                }
-
-                obj1.dx -= (speed * vCollisionNorm.x);
-                obj1.dy -= (speed * vCollisionNorm.y);
-                obj2.dx += (speed * vCollisionNorm.x);
-                obj2.dy += (speed * vCollisionNorm.y);
-
-                if (obj1.infected == true || obj2.infected == true){
-                    obj1.infected = true;
-                    obj2.infected = true;
-                }
-            }
+function collision(){
+    for (i = 0; i < boxes.length; i++){
+        if ((playerVariable.y + 20 > boxes[i].y && playerVariable.y < boxes[i].y + boxes[i].height) && (playerVariable.x > boxes[i].x && playerVariable.x < boxes[i].x + boxes[i].width)){
+            playerVariable.move_y_down = false;
+            playerVariable.y = boxes[i].y - 20;
+            return;
         }
     }
 
-    for (let i = 0; i < particleArray.length; i++)
-    {
-        obj1 = particleArray[i];
-
-        obj2 = playerVariable;
-
-            // Compare object1 with object2
-            var dist = circleIntersect(obj1.x, obj1.y, obj1.r, obj2.x, obj2.y, obj2.r);
-            if (dist === true){
-                obj1.colliding = true;
-                obj2.colliding = true;
-
-                let vCollision = {x: obj2.x - obj1.x, y: obj2.y - obj1.y};
-                let distance = Math.sqrt((obj2.x-obj1.x)*(obj2.x-obj1.x) + (obj2.y-obj1.y)*(obj2.y-obj1.y));
-                let vCollisionNorm = {x: vCollision.x / distance, y: vCollision.y / distance};
-                let vRelativeVelocity = {x: obj1.dx - obj2.dx, y: obj1.dy - obj2.dy};
-                let speed = vRelativeVelocity.x * vCollisionNorm.x + vRelativeVelocity.y * vCollisionNorm.y;
-
-                if (speed < 0){
-                    break;
-                }
-
-                obj1.dx -= (speed * vCollisionNorm.x);
-                obj1.dy -= (speed * vCollisionNorm.y);
-                //obj2.dx += (speed * vCollisionNorm.x);
-                //obj2.dy += (speed * vCollisionNorm.y);
-
-                if (obj1.infected == true || obj2.infected == true){
-                    obj1.infected = true;
-                    obj2.infected = true;
-                }
-            }
-    }
-}
-
-function help(){
-    c.font = "20px monospace";
-    c.fillStyle = "red";
+    playerVariable.move_y_down = true;
 }
 
 function animate(){
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
-    collide();
     for (i = 0; i < particleArray.length; i++){
         particleArray[i].update();
     }
 
-    playerVariable.draw();
+    for (i = 0; i < boxes.length; i++){
+        boxes[i].draw();
+    }
 
-    help();
+    c.beginPath();
+    c.rect(0, window.innerHeight - 49, window.innerWidth - 1, 50);
+    c.fillStyle = "#75beff";
+    c.fill();
+
+    collision();
+
+    playerVariable.draw();
 }
 
 animate();
