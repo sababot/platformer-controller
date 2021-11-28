@@ -19,6 +19,7 @@ let jump = 0;
 let bullet_index = 0;
 let mouse_pos = null;
 let angle = null;
+var shoot = false;
 
 canvas.addEventListener("mousemove", e => {
 
@@ -27,6 +28,15 @@ canvas.addEventListener("mousemove", e => {
         y: e.clientY - canvas.offsetTop
     }
 });
+
+canvas.onmousedown = function(e){
+    shoot = true;
+
+    mouseIsDown = true;
+}
+canvas.onmouseup = function(e){
+    shoot = false;
+}
 
 function Particle(x, y, dx, dy, collision, infected){
     this.x = x;
@@ -301,7 +311,7 @@ function animate(){
         particleArray[i].update();
     }
 
-    if (bullet_index % 2 == 0){
+    if (bullet_index % 2 == 0 && shoot){
         cannonBalls.push(new CannonBall(angle + (Math.random() * 0.25), playerVariable.x + 20, playerVariable.y + 20));
     }
     bullet_index += 1;
