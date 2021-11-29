@@ -16,9 +16,11 @@ var right = false;
 var up = false;
 var down = false;
 let jump = 0;
+let jumpBot = 0;
 let bullet_index = 0;
 let mouse_pos = null;
 let angle = null;
+let angleBot = null;
 var shoot = false;
 
 canvas.addEventListener("mousemove", e => {
@@ -235,6 +237,85 @@ function Player(x, y, infected){
 
 var playerVariable = new Player(canvas.width / 2, canvas.height / 2);
 
+function Bot(x, y, infected){
+    this.x = x;
+    this.y = y;
+    this.dx = 0;
+    this.dy = 0;
+    this.r = 15;
+    this.m = 2.5;
+    this.colliding = true;
+    this.infected = infected;
+    this.vel = 1;
+    this.jump_vel = 10;
+    this.randomNum = 0;
+    this.time = Math.random() * 3;;
+
+    this.draw = function(){
+        // Graphics
+        c.beginPath();
+        c.rect(this.x, this.y, 40, 40);
+        if (this.infected){
+            c.fillStyle = "black";
+        }
+        else{
+            c.fillStyle = "#ff5961";
+        }
+
+        c.fill();
+
+        // Movement
+        console.log(this.time);
+
+        this.randomNum = Math.floor(Math.random() * 50);
+
+        if (this.randomNum == 25){
+            jumpBot = 20;
+            this.jump_vel = 12.5;
+        }
+
+        // Jump
+        if (jumpBot > 0){
+            if (this.jump_vel >= 0){
+                this.jump_vel -= 0.5;
+            }
+            this.y -= this.jump_vel;
+            jumpBot -= 1;
+        }
+        else{
+            bot1.dy = 0;
+        }
+
+        // Gravity
+        if (this.y < window.innerHeight - 100 - 40){
+            if (this.vel < 10){
+                this.vel *= 1.075;
+            }
+
+            this.y += this.vel;
+
+            this.colliding = false;
+        }
+        else{
+            this.vel = 1;
+            this.colliding = true;
+        }
+
+        if (this.y > window.innerHeight - 100 - 40){
+            this.y = window.innerHeight - 99 - 40;
+        }
+
+        // Shooting
+        angleBot = Math.atan2(playerVariable.y - (this.y - 20), playerVariable.x - (this.x + 20));
+
+        // Movement
+        this.x += this.dx;
+        this.y += this.dy;
+    }
+}
+
+var bot1 = new Bot(canvas.width / 2, canvas.height / 2);
+
 cannonBalls.push(new CannonBall(angle, playerVariable.x, playerVariable.y));
 
 function aim(e){
@@ -333,6 +414,7 @@ function animate(){
     //collision();
 
     playerVariable.draw();
+    bot1.draw()
     c.restore();
 }
 
