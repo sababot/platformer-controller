@@ -240,7 +240,7 @@ var playerVariable = new Player(canvas.width / 2, canvas.height / 2);
 function Bot(x, y, infected){
     this.x = x;
     this.y = y;
-    this.dx = 0;
+    this.dx = 2;
     this.dy = 0;
     this.r = 15;
     this.m = 2.5;
@@ -249,7 +249,8 @@ function Bot(x, y, infected){
     this.vel = 1;
     this.jump_vel = 10;
     this.randomNum = 0;
-    this.time = Math.random() * 3;;
+    this.time = Math.random() * 3;
+    this.moveTime = 20;
 
     this.draw = function(){
         // Graphics
@@ -265,7 +266,19 @@ function Bot(x, y, infected){
         c.fill();
 
         // Movement
-        console.log(this.time);
+        if (this.moveTime > 0){
+            this.moveTime -= 1;
+        }
+        else{
+            this.moveTime = Math.floor(Math.random() * 50);
+
+            if (Math.floor(Math.random() * 2) == 0){
+                this.dx = Math.random() * 5;
+            }
+            else{
+                this.dx = Math.random() * -5;
+            }
+        }
 
         this.randomNum = Math.floor(Math.random() * 50);
 
@@ -393,7 +406,7 @@ function animate(){
     }
 
     if (bullet_index % 2 == 0 && shoot){
-        cannonBalls.push(new CannonBall(angle + (Math.random() * 0.25), playerVariable.x + 20, playerVariable.y + 20));
+        cannonBalls.push(new CannonBall(angle + (Math.random() * 0.1), playerVariable.x + 20, playerVariable.y + 20));
     }
     bullet_index += 1;
 
