@@ -251,16 +251,17 @@ function Bot(x, y, infected){
     this.randomNum = 0;
     this.time = Math.random() * 3;
     this.moveTime = 20;
+    this.health = 100;
 
     this.draw = function(){
         // Graphics
         c.beginPath();
         c.rect(this.x, this.y, 40, 40);
-        if (this.infected){
-            c.fillStyle = "black";
+        if (this.health > 0){
+            c.fillStyle = "#ff5961";
         }
         else{
-            c.fillStyle = "#ff5961";
+            c.fillStyle = "black";
         }
 
         c.fill();
@@ -375,28 +376,13 @@ function aim2(e){
     }
 }
 
-//var boxes = [];
-
-/*
-boxes.push(new box(300, 700, 10, 100, "brown"));
-boxes.push(new box(500, 650, 10, 100, "brown"));
-boxes.push(new box(300, 550, 10, 100, "brown"));
-boxes.push(new box(150, 500, 10, 100, "brown"));
-
-
-
 function collision(){
-    for (i = 0; i < boxes.length; i++){
-        if ((playerVariable.y + 20 > boxes[i].y && playerVariable.y < boxes[i].y + boxes[i].height) && (playerVariable.x > boxes[i].x && playerVariable.x < boxes[i].x + boxes[i].width)){
-            playerVariable.move_y_down = false;
-            playerVariable.y = boxes[i].y - 20;
-            return;
+    for (i = 0; i < cannonBalls.length; i++){
+        if ((cannonBalls[i].x > bot1.x && cannonBalls[i].x < bot1.x + 40) && (cannonBalls[i].y > bot1.y && cannonBalls[i].y < bot1.y + 40)){
+            bot1.health -= 10;
         }
     }
-
-    playerVariable.move_y_down = true;
 }
-*/
 
 function animate(){
     requestAnimationFrame(animate);
@@ -405,8 +391,8 @@ function animate(){
         particleArray[i].update();
     }
 
-    if (bullet_index % 2 == 0 && shoot){
-        cannonBalls.push(new CannonBall(angle + (Math.random() * 0.1), playerVariable.x + 20, playerVariable.y + 20));
+    if (bullet_index % 35 == 0 && shoot){
+        cannonBalls.push(new CannonBall(angle, playerVariable.x + 20, playerVariable.y + 20));
     }
     bullet_index += 1;
 
@@ -415,16 +401,12 @@ function animate(){
         cannonBalls[i].move();
     }
 
-    //for (i = 0; i < boxes.length; i++){
-        //boxes[i].draw();
-    //}
-
     c.beginPath();
     c.rect(0, window.innerHeight - 99, window.innerWidth - 1, 100);
     c.fillStyle = "#75beff";
     c.fill();
 
-    //collision();
+    collision();
 
     playerVariable.draw();
     bot1.draw()
