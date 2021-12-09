@@ -33,6 +33,7 @@ canvas.addEventListener("mousemove", e => {
 
 canvas.onmousedown = function(e){
     shoot = true;
+    bullet_index = 35;
 
     mouseIsDown = true;
 }
