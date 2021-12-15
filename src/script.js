@@ -223,7 +223,7 @@ function Player(x, y, infected){
 
         // Shooting
         if (mouse_pos){
-            angle = Math.atan2(mouse_pos.y - (this.y - 20), mouse_pos.x - (this.x + 20));
+            angle = Math.atan2(mouse_pos.y - (this.y + 20), mouse_pos.x - (this.x + 20));
 
             //c.translate((this.x + 20), (this.y - 20));
             //c.rotate(angle);
@@ -275,10 +275,10 @@ function Bot(x, y, infected){
             this.moveTime = Math.floor(Math.random() * 50);
 
             if (Math.floor(Math.random() * 2) == 0){
-                this.dx = Math.random() * 5;
+                this.dx = 5;
             }
             else{
-                this.dx = Math.random() * -5;
+                this.dx = -5;
             }
         }
 
@@ -321,10 +321,20 @@ function Bot(x, y, infected){
         }
 
         // Shooting
-        angleBot = Math.atan2(playerVariable.y - (this.y - 20), playerVariable.x - (this.x + 20));
+        angleBot = Math.atan2(playerVariable.y - (this.y), playerVariable.x - (this.x + 20));
 
         // Movement
-        this.x += this.dx;
+        if (this.x < window.innerWidth - 41 && this.x > 1){
+            this.x += this.dx;
+
+            if (this.x > window.innerWidth - 41){
+                this.x = window.innerWidth - 42;
+            }
+
+            else if (this.x < 1){
+                this.x = 2;
+            }
+        }
         this.y += this.dy;
     }
 }
@@ -394,6 +404,7 @@ function animate(){
 
     if (bullet_index % 35 == 0 && shoot){
         cannonBalls.push(new CannonBall(angle, playerVariable.x + 20, playerVariable.y + 20));
+        cannonBalls.push(new CannonBall(angleBot, bot1.x + 20, bot1.y + 20));
     }
     bullet_index += 1;
 
