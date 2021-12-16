@@ -18,6 +18,7 @@ var down = false;
 let jump = 0;
 let jumpBot = 0;
 let bullet_index = 0;
+let bullet_index_bot = 0;
 let mouse_pos = null;
 let angle = null;
 let angleBot = null;
@@ -99,7 +100,7 @@ function Particle(x, y, dx, dy, collision, infected){
 var particleArray = [];
 
 class CannonBall {
-    constructor(angle, x, y) {
+    constructor(angle, x, y, enemy) {
         this.radius = 5;
         this.angle = angle;
         this.x = x;
@@ -107,6 +108,7 @@ class CannonBall {
         this.dx = Math.cos(angle) * 15;
         this.dy = Math.sin(angle) * 15;
         this.gravity = 0.05;
+        this.enemy = enemy;
     }
 
     move() {  
@@ -154,6 +156,7 @@ function Player(x, y, infected){
     this.vel = 1;
     this.jump_vel = 10;
     this.colliding = false;
+    this.health = 100;
     this.move_x_left = true;
     this.move_x_right = true;
     this.move_y_up = true;
@@ -163,7 +166,7 @@ function Player(x, y, infected){
         // Graphics
         c.beginPath();
         c.rect(this.x, this.y, 40, 40);
-        if (this.infected){
+        if (this.health <= 0){
             c.fillStyle = "black";
         }
         else{
@@ -341,7 +344,7 @@ function Bot(x, y, infected){
 
 var bot1 = new Bot(canvas.width / 2, canvas.height / 2);
 
-cannonBalls.push(new CannonBall(angle, playerVariable.x, playerVariable.y));
+cannonBalls.push(new CannonBall(angle, playerVariable.x, playerVariable.y, false));
 
 function aim(e){
     if(e.keyCode == 37 || e.keyCode == 65){
@@ -389,8 +392,12 @@ function aim2(e){
 
 function collision(){
     for (i = 0; i < cannonBalls.length; i++){
-        if ((cannonBalls[i].x > bot1.x && cannonBalls[i].x < bot1.x + 40) && (cannonBalls[i].y > bot1.y && cannonBalls[i].y < bot1.y + 40)){
+        if ((cannonBalls[i].x > bot1.x && cannonBalls[i].x < bot1.x + 40) && (cannonBalls[i].y > bot1.y && cannonBalls[i].y < bot1.y + 40) && cannonBalls[i].enemy == false){
             bot1.health -= 10;
+        }
+
+        else if ((cannonBalls[i].x > playerVariable.x && cannonBalls[i].x < playerVariable.x + 40) && (cannonBalls[i].y > playerVariable.y && cannonBalls[i].y < playerVariable.y + 40) && cannonBalls[i].enemy == true){
+            playerVariable.health -= 10;
         }
     }
 }
@@ -403,10 +410,15 @@ function animate(){
     }
 
     if (bullet_index % 35 == 0 && shoot){
-        cannonBalls.push(new CannonBall(angle, playerVariable.x + 20, playerVariable.y + 20));
-        cannonBalls.push(new CannonBall(angleBot, bot1.x + 20, bot1.y + 20));
+        cannonBalls.push(new CannonBall(angle, playerVariable.x + 20, playerVariable.y + 20, false));
     }
+
+    if (bullet_index_bot % 35 == 0){
+        cannonBalls.push(new CannonBall(angleBot, bot1.x + 20, bot1.y + 20, true));
+    }
+
     bullet_index += 1;
+    bullet_index_bot += 1;
 
     for (i = 0; i < cannonBalls.length; i++){
         cannonBalls[i].draw();
